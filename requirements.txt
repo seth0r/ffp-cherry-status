@@ -1,0 +1,5 @@
+gunicorn
+cherrypy
+pymongo
+jinja2
+requests
