@@ -1,0 +1,39 @@
+{% import 'helpers.tpl' as h %}
+{% set l = link["l"] %}
+{% set r = link["r"] %}
+{% macro format_stat(stat) %}
+    <span class="tq">{{ (stat['tq'] / 2.55)|round|int }} %</span>
+    {% if stat['signal'] is number and stat['noise'] is number %}<span class="snr">({{ stat['signal'] - stat['noise'] }} dBm)</span>{% endif %}
+    {% if stat['lastseen'] is gt( 1200 ) %}<span class="lastseen"> vor {{ h.formatDuration( stat['lastseen'], 60 ) }}</span>{% endif %}
+{% endmacro %}
+<div class="container linkinfo" id="{{ link['link_id'] }}">
+    <div class="row header">
+        <div class="col-4"></div>
+        {% if link['otq'] %}
+        <div class="col-4 tq">{{ ((link['tq'] + link['otq']) / 5.1)|round|int }} %</div>
+        {% else %}
+        <div class="col-4 tq">{{ (link['tq'] / 2.55)|round }} %</div>
+        {% endif %}
+        <div class="col-4 grafanalink">
+            <a href="/g/linkinfo?localhost={{ link['nodes'][l]['host'] }}&remotehost={{ link['nodes'][r]['host'] }}" target="_blank">
+            <img src="/static/grafana.svg" title="Grafana" alt="Grafana" width="24px" height="24px"></a>
+        </div>
+    </div>
+    <div class="row subheader">
+        <div class="col-5 hostname">{{ link['nodes'][l]['host'] }}</div>
+        <div class="col-2 length">{{ h.formatMeters( link['length'] ) }}</div>
+        <div class="col-5 hostname">{{ link['nodes'][r]['host'] }}</div>
+    </div>
+    {% for s in link['stats'] %}
+    <div class="row link">
+        <div class="col-5 kind_{{ s[l]['kind'] }}">
+        {% if s[l] %}{{ format_stat( s[l] ) }}{% endif %}
+        </div>
+        <div class="col-1 symbol_{{ s[l]['kind'] }}"></div>
+        <div class="col-1 symbol_{{ s[r]['kind'] }}"></div>
+        <div class="col-5 kind_{{ s[r]['kind'] }}">
+        {% if s[r] %}{{ format_stat( s[r] ) }}{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
