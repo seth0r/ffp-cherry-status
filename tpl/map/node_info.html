@@ -1,6 +1,73 @@
-<div class="container">
+{% import 'helpers.tpl' as h %}
+<div class="container nodeinfo {{ color }}" id="{{ node['_id'] }}">
     <div class="row">
-        <div class="col">Hostname:</div>
-        <div class="col">{{ node["host"] }}</div>
+        <div class="col hostname">{{ node['host'] }}</div>
+    </div>
+    {% if node['offline'] is gt(0) %}
+    <div class="row">
+        <div class="col offline">offline for {{ h.formatDuration( node['offline'] * 60*60 ) }}</div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col">Uptime:</div>
+        <div class="col uptime jsClock">{{ h.jsClock( now, node['uptime'] + now - node['last_ts'] ) }}</div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col">Last data:</div>
+        <div class="col lastdata jsClock">{{ h.jsClock( now, now - node['last_ts'] ) }} ago</div>
+    </div>
+    <div class="row">
+        <div class="col">Hardware:</div>
+        <div class="col hardware">{{ node['hardware']['model'] }}</div>
+    </div>
+    <div class="row">
+        <div class="col">Addresses:</div>
+        <div class="col address">
+        {% for a in node['network']['addresses']|sort %}
+            <a href="http://[{{ a }}]/" target="_blank">{{ a }}</a><br>
+        {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">Location:</div>
+        <div class="col location">
+        {% if node['location'] %}
+            <a href="#zoom=17&lon={{ loc[0] }}&lat={{ loc[1] }}">@ {{ loc[0]|round(6) }} ; {{ loc[1]|round(6) }}</a>
+        {% elif node['location_guess'] %}
+            <a href="#zoom=17&lon={{ loc[0] }}&lat={{ loc[1] }}">@ {{ loc[0]|round(6) }} ; {{ loc[1]|round(6) }}</a> (guessed)
+        {% else %}
+            <a href="#zoom=17&lon={{ loc[0] }}&lat={{ loc[1] }}">unknown</a>
+        {% endif %}
+        </div>
+    </div>
+    {% if nexthop %}
+    <div class="row">
+        <div class="col">Next hop:</div>
+        <div class="col nexthop">{{ nexthop['host'] }}</div>
+    </div>
+    {% endif %}
+    {% if node.get('owner',{})['contact'] %}
+    <div class="row">
+        <div class="col">Contact:</div>
+        <div class="col contact">{{ node['owner']['contact'] }}</div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col">Firmware base:</div>
+        <div class="col firmware">{{ node['software']['firmware']['base'] }}</div>
+    </div>
+    <div class="row">
+        <div class="col">Firmware release:</div>
+        <div class="col firmware">{{ node['software']['firmware']['release'] }}</div>
+    </div>
+    <div class="row">
+        <div class="col">FFP-collect version:</div>
+        <div class="col firmware">{{ node['software']['ffpcollect'] }}</div>
+    </div>
+    <div class="row">
+        <div class="col">Autoupdater:</div>
+        <div class="col autoupdater">{{ node['software']['autoupdater']['branch'] }}
+        {% if not node['software']['autoupdater']['enabled'] %}(disabled){% endif %}</div>
     </div>
 </div>
