@@ -25,7 +25,7 @@
         <div class="col">Addresses:</div>
         <div class="col address">
         {% for a in node['network']['addresses']|sort %}
-            <a href="http://[{{ a }}]/" target="_blank">{{ a }}</a><br>
+            <a href="http://[{{ a }}]/" target="_blank">{{ a }}</a>
         {% endfor %}
         </div>
     </div>
