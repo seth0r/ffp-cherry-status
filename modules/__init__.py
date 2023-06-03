@@ -17,7 +17,7 @@ while True:
             for name, value in inspect.getmembers(module):
                 if name.startswith('__'):
                     continue
-                if name.lower() == mname.lower():
+                if inspect.isclass(value) and name.lower() == mname.lower():
                     globals()[name] = value
                     __all__.append(name)
                     __classes__[name] = value
