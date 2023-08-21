@@ -20,8 +20,9 @@
     {% endif %}
 {% endmacro %}
 
-{% macro jsClock( now, start ) %}
-<span class="value">{{ formatDuration( start ) }}</span>
+{% macro jsClock( now, start, res ) %}
+<span class="value">{{ formatDuration( start, res ) }}</span>
 <span class="now">{{ now }}</span>
 <span class="start">{{ start }}</span>
+<span class="res">{{ res }}</span>
 {% endmacro %}

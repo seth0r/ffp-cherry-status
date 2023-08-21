@@ -10,12 +10,12 @@
     {% else %}
     <div class="row">
         <div class="col">Uptime:</div>
-        <div class="col uptime jsClock">{{ h.jsClock( now, node['uptime'] + now - node['last_ts'] ) }}</div>
+        <div class="col uptime jsClock">{{ h.jsClock( now, node['uptime'] + now - node['last_ts'], 60 ) }}</div>
     </div>
     {% endif %}
     <div class="row">
         <div class="col">Last data:</div>
-        <div class="col lastdata jsClock">{{ h.jsClock( now, now - node['last_ts'] ) }} ago</div>
+        <div class="col lastdata jsClock">{{ h.jsClock( now, now - node['last_ts'], 60 ) }} ago</div>
     </div>
     <div class="row">
         <div class="col">Hardware:</div>
