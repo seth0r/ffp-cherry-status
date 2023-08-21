@@ -27,10 +27,18 @@ def getnodeloc(node):
         float(os.getenv("DEFLAT","0")) - 0.001 + random.random() * 0.002,
     ]
 
-def getkindofaddr(node,addr):
-    for kind,addrs in node.get("network",{}).get("mesh",{}).get("bat0",{}).get("interfaces",{}).items():
-        if addr in addrs:
-            return kind
+def getkindofaddr(addr):
+    KINDS = {
+        0:"wired",
+        1:"wireless",
+        2:"unknown_2",
+        3:"wired",
+        4:"wired",
+        5:"wireless",
+        6:"unknown_6",
+        7:"tunnel",
+    }
+    return KINDS[ int(addr[-1],16) & 7 ]
 
 class NodeMap:
     def node2gjs(self,node):
@@ -89,11 +97,11 @@ class NodeMap:
             "stat.tq":{"$gt":0}
           }):
             l["stat"]["lastseen"] += now - l["time"]
-            l["stat"]["kind"] = getkindofaddr( thisnode, l["local"] )
+            l["stat"]["kind"] = getkindofaddr( l["local"] )
             rl = self.mdb["neighbours"].find_one({ "local":l["remote"], "remote":l["local"], "time":{"$gte":now - 24*60*60}, "stat.tq":{"$gt":0} })
             if rl:
                 rl["stat"]["lastseen"] += now - rl["time"]
-                rl["stat"]["kind"] = getkindofaddr( othernode, rl["local"] )
+                rl["stat"]["kind"] = getkindofaddr( rl["local"] )
             links.append((l["stat"],rl["stat"] if rl else None))
         links.sort( key = lambda x: x[0]["tq"], reverse = True )
         return links
