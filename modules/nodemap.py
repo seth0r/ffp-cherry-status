@@ -49,6 +49,7 @@ class NodeMap:
                 lambda co: node['offline'] <= co[1],
                 node.get("offline_limits",{}).items()
             ), key = lambda co: co[1] )]+[None] )[0]
+        lang = self.get_lang()
         f = {
             "type": "Feature",
             "geometry": {
@@ -58,8 +59,10 @@ class NodeMap:
             "properties": {
                 "type" : "node",
                 "id"   : node["_id"],
-                "popup": self.get_tpl( "map/node_popup.html" ).render( node = node, nexthop = nexthop, loc = loc, color = color, now = now ),
-                "info" : self.get_tpl( "map/node_info.html"  ).render( node = node, nexthop = nexthop, loc = loc, color = color, now = now ),
+                "popup": self.get_tpl( "map/node_popup.%s.html" % lang, "map/node_popup.html" ).
+                    render( node = node, nexthop = nexthop, loc = loc, color = color, now = now ),
+                "info" : self.get_tpl( "map/node_info.%s.html" % lang, "map/node_info.html"  ).
+                    render( node = node, nexthop = nexthop, loc = loc, color = color, now = now ),
             }
         }
         vpn = node.get("network",{}).get("mesh_vpn",{})
@@ -149,6 +152,7 @@ class NodeMap:
             yield res
 
     def link2gjs(self,l):
+        lang = self.get_lang()
         f = {
             "type": "Feature",
             "geometry": {
@@ -158,7 +162,7 @@ class NodeMap:
             "properties": {
                 "type": "link",
                 "id"  : l["link_id"],
-                "info": self.get_tpl( "map/link_info.html"  ).render( link = l ),
+                "info": self.get_tpl( "map/link_info.%s.html" % lang, "map/link_info.html"  ).render( link = l ),
                 "tq"  : l["tq"] / 255,
                 "seen": l["lastseen"],
             }

@@ -28,10 +28,21 @@ class Root( * modules.__classes__.values() ):
                 pass
 
     def serve_site(self, tpl, **kwargs):
-        tpl = self.get_tpl( tpl, "%s.html" % tpl )
+        lang = self.get_lang()
+        kwargs.setdefault("lang", lang)
+        tpl = self.get_tpl( tpl, "%s.%s.html" % (tpl, lang), "%s.html" % tpl )
         if tpl is not None:
             return tpl.render( me = self, **kwargs )
         raise HTTPError(404,"Template not found.")
+
+    def get_lang(self):
+        user = None
+        if hasattr(self,"get_user"):
+            user = self.get_user()
+        if user and "lang" in user:
+            return user["lang"]
+        else:
+            return cherrypy.request.headers.get("Accept-Language","en")[:2]
 
     @cherrypy.expose
     def default(self,name):
