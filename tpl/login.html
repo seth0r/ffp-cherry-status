@@ -1,0 +1,35 @@
+{% extends "ffpbase.htm" %}
+{% import "forms.tpl" as forms %}
+
+{% block title %}
+FFP Status - Login
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="h-100 d-flex align-items-center justify-content-center">
+<form method="POST" action="/{{ url }}">
+{% if state %}
+    <div class="alert alert-danger" role="alert">
+    {% if state == "failed" %}
+        Login failed.
+    {% endif %}
+    </div>
+{% endif %}
+    <input type="hidden" name="redirectto" value="{{ redirectto }}" />
+    {{ forms.row_input("text","username","Username:") }}
+    {{ forms.row_input("password","password","Password:") }}
+    {{ forms.row_submitbtn_right("Sign in") }}
+</form>
+</div>
+{% endblock %}

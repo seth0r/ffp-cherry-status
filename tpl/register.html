@@ -1,0 +1,45 @@
+{% extends "ffpbase.htm" %}
+{% import "forms.tpl" as forms %}
+
+{% block title %}
+FFP Status - Login
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="h-100 d-flex align-items-center justify-content-center">
+<form method="POST" action="/{{ url }}">
+{% if state %}
+    <div class="alert alert-danger" role="alert">
+    {% if state == "username_to_short" %}
+        Username to short.
+    {% elif state == "username_invalid" %}
+        Username contains invalid characters.
+    {% elif state == "email_nomatch" %}
+        E-mail addresses do not match.
+    {% elif state == "email_invalid" %}
+        E-mail address is invalid.
+    {% elif state == "exists" %}
+        User already exists.
+    {% endif %}
+    </div>
+{% endif %}
+    <input type="hidden" name="redirectto" value="{{ redirectto or "/registered" }}" />
+    {{ forms.row_input("text","username","Username:") }}
+    {{ forms.row_input("text","email","E-mail:") }}
+    {{ forms.row_input("text","email_again","Confirm E-mail:") }}
+    {{ forms.row_select("lang","Language:", {"en":"English","de":"Deutsch"}, lang) }}
+    {{ forms.row_submitbtn_right("Register") }}
+</form>
+</div>
+{% endblock %}
