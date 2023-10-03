@@ -13,8 +13,9 @@ from root import Root
 class App(Root):
     def __init__(self):
         self.logger = logging.getLogger( self.__class__.__name__ )
-        for cls in self.__class__.__bases__:
-            if hasattr(cls,"__init__"):
+        for cls in self.__class__.__mro__:
+            self.logger.info("Loaded class %s." % cls)
+            if cls is not self.__class__ and hasattr(cls,"__init__"):
                 getattr(cls,"__init__")(self)
         
     @cherrypy.expose
