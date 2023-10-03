@@ -2,7 +2,7 @@ import logging
 import cherrypy
 import atexit
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 cherrypy.config.update({
     'environment': 'embedded',
