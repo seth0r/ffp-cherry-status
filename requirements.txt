@@ -3,3 +3,4 @@ cherrypy
 pymongo
 jinja2
 requests
+argon2-cffi

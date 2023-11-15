@@ -4,9 +4,10 @@ import os
 import time
 import math
 import secrets
-import hashlib
 import inspect
 import json
+from argon2 import PasswordHasher
+from argon2.exceptions import VerificationError
 
 def valid_domain( s ):
     dot = s.find(".")
@@ -38,14 +39,25 @@ def valid_email( s ):
     return valid_username(acc) and valid_domain(domain)
 
 class Auth:
+    def _check_password(self,pwhash,password):
+        try:
+            ph = PasswordHasher()
+            if ph.verify(pwhash, password):
+                return True
+        except VerificationError:
+            pass
+        return False
+
     def _login(self,username,password):
         user = self.mdb["users"].find_one({ "username":username, "active":True })
-        if user is not None and "pwhash" in user and "pwsalt" in user:
-            h = hashlib.sha256(user["pwsalt"])
-            h.update(bytes(password,"utf-8"))
-            if h.digest() == user["pwhash"]:
+        if user is not None and "pwhash" in user:
+            if self._check_password(user["pwhash"], bytes(password,"utf-8")):
                 sessid = secrets.token_hex()
-                self.mdb["users"].update({"_id":user["_id"]},{"$set":{"sessid":sessid}, "$unset":{"pwtoken":True, "pwtokenexp":True}})
+                s = { "sessid":sessid }
+                ph = PasswordHasher()
+                if ph.check_needs_rehash(user["pwhash"]):
+                    s["pwhash"] = ph.hash(bytes(password,"utf-8"))
+                self.mdb["users"].update_one({"_id":user["_id"]},{"$set":s, "$unset":{"pwtoken":True, "pwtokenexp":True}})
                 cookie = cherrypy.response.cookie
                 cookie['sessid'] = sessid
                 cookie['sessid']['path'] = '/'
@@ -120,10 +132,9 @@ class Auth:
             user = self.mdb["users"].find_one({ "pwtoken":pwtoken, "pwtokenexp":{"$gte":time.time()}, "active":True })
             if user:
                 if password == password_again:
-                    pwsalt = secrets.token_bytes()
-                    h = hashlib.sha256(pwsalt)
-                    h.update(bytes(password,"utf-8"))
-                    self.mdb["users"].update({"_id":user["_id"]},{"$set":{"pwsalt":pwsalt, "pwhash": h.digest()}, "$unset":{"pwtoken":True, "pwtokenexp":True}})
+                    ph = PasswordHasher()
+                    h = ph.hash(bytes(password,"utf-8"))
+                    self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{ "pwhash": h}, "$unset":{"pwtoken":True, "pwtokenexp":True}})
                     raise HTTPRedirect(redirectto)
                 else:
                     state = "pw_nomatch"
