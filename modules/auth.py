@@ -79,7 +79,7 @@ class Auth:
             return "exists"
         if self.mdb["users"].find_one({ "email":email }):
             return "exists"
-        pwtoken = secrets.token_urlsave(256)
+        pwtoken = secrets.token_urlsafe(256)
         user = {
             "username": username,
             "email": email,
@@ -88,10 +88,10 @@ class Auth:
             "pwtokenexp": int(time.time()) + 24*60*60,
             "mails":["pwinit"],
         }
-        for k,v in kwargs:
+        for k,v in kwargs.items():
             if k in ["lang"]:
                 user[k] = v
-        self.mdb["users"].insert(user)
+        self.mdb["users"].insert_one(user)
         return True
 
     @cherrypy.expose
@@ -119,8 +119,8 @@ class Auth:
         if cherrypy.request.method == "POST" and all([username, email]):
             user = self.mdb["users"].find_one({ "username":username, "email":email, "active":True })
             if user:
-                pwtoken = secrets.token_urlsave(256)
-                self.mdb["users"].update({"_id":user["_id"]},{"$set":{"pwtoken":pwtoken, "pwtokenexp":int(time.time()) + 24*60*60},"$push":{"mails":"pwreset"}})
+                pwtoken = secrets.token_urlsafe(256)
+                self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{"pwtoken":pwtoken, "pwtokenexp":int(time.time()) + 24*60*60},"$push":{"mails":"pwreset"}})
             raise HTTPRedirect(redirectto)
         return self.serve_site(url, url = url, redirectto = redirectto)
 
@@ -144,7 +144,7 @@ class Auth:
     def logout(self,redirectto="/"):
         if "sessid" in cherrypy.request.cookie:
             sessid = cherrypy.request.cookie["sessid"].value
-            self.mdb["users"].update({"sessid":sessid},{"$set":{"sessid":None}})
+            self.mdb["users"].update_one({"sessid":sessid},{"$set":{"sessid":None}})
             cookie = cherrypy.response.cookie
             cookie['sessid'] = ""
             cookie['sessid']['path'] = '/'
