@@ -46,7 +46,7 @@ class NodeMap:
         loc = getnodeloc(node)
         nexthop = self.mdb["nodes"].find_one({ "ifaddr":node.get("network",{}).get("nexthop",None) })
         color = ([ co[0] for co in sorted( filter(
-                lambda co: node['offline'] <= co[1],
+                lambda co: node.get('offline',0) <= co[1],
                 node.get("offline_limits",{}).items()
             ), key = lambda co: co[1] )]+[None] )[0]
         lang = self.get_lang()
