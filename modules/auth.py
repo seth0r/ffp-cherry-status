@@ -104,14 +104,14 @@ class Auth:
         return self.serve_site(url, url = url, redirectto = redirectto)
 
     @cherrypy.expose
-    def register(self, username = None, email = None, email_again = None, redirectto="/", state=None, me=None, **kwargs):
+    def register(self, username = None, email = None, email_again = None, state=None, me=None, url=None, **kwargs):
         url = inspect.stack()[0][3]
         if cherrypy.request.method == "POST" and all([username, email, email_again]):
             state = self._register(username, email, email_again, **kwargs)
             if state is True:
-                raise HTTPRedirect(redirectto)
-            return self.serve_site(url, url = url, state = state, username = username, email = email, redirectto = redirectto, **kwargs)
-        return self.serve_site(url, url = url,  redirectto = redirectto)
+                return self.serve_site("register_next", url = url, state = state, username = username, email = email, **kwargs)
+            return self.serve_site(url, url = url, state = state, username = username, email = email, **kwargs)
+        return self.serve_site(url, url = url )
 
     @cherrypy.expose
     def reset_password(self, username=None, email=None ):

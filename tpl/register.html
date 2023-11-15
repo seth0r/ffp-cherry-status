@@ -34,7 +34,6 @@ body {
     {% endif %}
     </div>
 {% endif %}
-    <input type="hidden" name="redirectto" value="{{ redirectto or "/registered" }}" />
     {{ forms.row_input("text","username","Username:") }}
     {{ forms.row_input("text","email","E-mail:") }}
     {{ forms.row_input("text","email_again","Confirm E-mail:") }}
