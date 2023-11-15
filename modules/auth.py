@@ -114,15 +114,33 @@ class Auth:
         return self.serve_site(url, url = url,  redirectto = redirectto)
 
     @cherrypy.expose
-    def reset_password(self, username=None, email=None, redirectto="/"):
+    def reset_password(self, username=None, email=None ):
         url = inspect.stack()[0][3]
         if cherrypy.request.method == "POST" and all([username, email]):
             user = self.mdb["users"].find_one({ "username":username, "email":email, "active":True })
             if user:
                 pwtoken = secrets.token_urlsafe(256)
                 self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{"pwtoken":pwtoken, "pwtokenexp":int(time.time()) + 24*60*60},"$push":{"mails":"pwreset"}})
+            return self.serve_site("reset_password_next", url = url )
+        return self.serve_site(url, url = url )
+
+    @cherrypy.expose
+    def change_password(self, old_password=None, new_password=None, new_password_again=None, redirectto="/"):
+        url = inspect.stack()[0][3]
+        user = self.get_user()
+        if user is not None and "pwhash" in user:
+            if new_password == new_password_again:
+                state = "pw_nomatch"
+            elif not self._check_password(user["pwhash"], bytes(old_password,"utf-8")):
+                state = "pw_failed"
+            else:
+                ph = PasswordHasher()
+                h = ph.hash(bytes(new_password,"utf-8"))
+                self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{ "pwhash": h}})
+                raise HTTPRedirect(redirectto)
+            return self.serve_site(url, url = url, user = user, state = state, redirectto = redirectto)
+        else:
             raise HTTPRedirect(redirectto)
-        return self.serve_site(url, url = url, redirectto = redirectto)
 
     @cherrypy.expose
     def set_password(self, pwtoken, password=None, password_again=None, redirectto="/"):
