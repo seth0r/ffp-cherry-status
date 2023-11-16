@@ -128,16 +128,18 @@ class Auth:
     def change_password(self, old_password=None, new_password=None, new_password_again=None, redirectto="/"):
         url = inspect.stack()[0][3]
         user = self.get_user()
+        state = None
         if user is not None and "pwhash" in user:
-            if new_password == new_password_again:
-                state = "pw_nomatch"
-            elif not self._check_password(user["pwhash"], bytes(old_password,"utf-8")):
-                state = "pw_failed"
-            else:
-                ph = PasswordHasher()
-                h = ph.hash(bytes(new_password,"utf-8"))
-                self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{ "pwhash": h}})
-                raise HTTPRedirect(redirectto)
+            if cherrypy.request.method == "POST" and all([old_password, new_password, new_password_again]):
+                if new_password == new_password_again:
+                    state = "pw_nomatch"
+                elif not self._check_password(user["pwhash"], bytes(old_password,"utf-8")):
+                    state = "pw_failed"
+                else:
+                    ph = PasswordHasher()
+                    h = ph.hash(bytes(new_password,"utf-8"))
+                    self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{ "pwhash": h}})
+                    raise HTTPRedirect(redirectto)
             return self.serve_site("auth/%s" % url, url = url, user = user, state = state, redirectto = redirectto)
         else:
             raise HTTPRedirect(redirectto)
