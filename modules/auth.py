@@ -100,8 +100,8 @@ class Auth:
         if cherrypy.request.method == "POST" and all([username, password]):
             if self._login(username,password):
                 raise HTTPRedirect(redirectto)
-            return self.serve_site(url, url = url, state = "failed", redirectto = redirectto)
-        return self.serve_site(url, url = url, redirectto = redirectto)
+            return self.serve_site("auth/%s" % url, url = url, state = "failed", redirectto = redirectto)
+        return self.serve_site("auth/%s" % url, url = url, redirectto = redirectto)
 
     @cherrypy.expose
     def register(self, username = None, email = None, email_again = None, state=None, me=None, url=None, **kwargs):
@@ -109,9 +109,9 @@ class Auth:
         if cherrypy.request.method == "POST" and all([username, email, email_again]):
             state = self._register(username, email, email_again, **kwargs)
             if state is True:
-                return self.serve_site("register_next", url = url, state = state, username = username, email = email, **kwargs)
-            return self.serve_site(url, url = url, state = state, username = username, email = email, **kwargs)
-        return self.serve_site(url, url = url )
+                return self.serve_site("auth/register_next", url = url, state = state, username = username, email = email, **kwargs)
+            return self.serve_site("auth/%s" % url, url = url, state = state, username = username, email = email, **kwargs)
+        return self.serve_site("auth/%s" % url, url = url )
 
     @cherrypy.expose
     def reset_password(self, username=None, email=None ):
@@ -121,8 +121,8 @@ class Auth:
             if user:
                 pwtoken = secrets.token_urlsafe(256)
                 self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{"pwtoken":pwtoken, "pwtokenexp":int(time.time()) + 24*60*60},"$push":{"mails":"pwreset"}})
-            return self.serve_site("reset_password_next", url = url )
-        return self.serve_site(url, url = url )
+            return self.serve_site("auth/reset_password_next", url = url )
+        return self.serve_site("auth/%s" % url, url = url )
 
     @cherrypy.expose
     def change_password(self, old_password=None, new_password=None, new_password_again=None, redirectto="/"):
@@ -138,7 +138,7 @@ class Auth:
                 h = ph.hash(bytes(new_password,"utf-8"))
                 self.mdb["users"].update_one({"_id":user["_id"]},{"$set":{ "pwhash": h}})
                 raise HTTPRedirect(redirectto)
-            return self.serve_site(url, url = url, user = user, state = state, redirectto = redirectto)
+            return self.serve_site("auth/%s" % url, url = url, user = user, state = state, redirectto = redirectto)
         else:
             raise HTTPRedirect(redirectto)
 
@@ -156,7 +156,7 @@ class Auth:
                     raise HTTPRedirect(redirectto)
                 else:
                     state = "pw_nomatch"
-        return self.serve_site(url, url = url, pwtoken = pwtoken, state = state, redirectto = redirectto)
+        return self.serve_site("auth/%s" % url, url = url, pwtoken = pwtoken, state = state, redirectto = redirectto)
 
     @cherrypy.expose
     def logout(self,redirectto="/"):
