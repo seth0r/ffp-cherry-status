@@ -1,0 +1,31 @@
+{% extends "ffpbase.htm" %}
+
+{% block head %}
+<style>
+html,
+body {
+    color-scheme: light dark;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<pre>
+<b>DO:</b> {{ node['system']['domain_code']|replace("_"," ")|title }}
+
+{% if node.get('owner',{})['contact'] -%}
+    <b>OC:</b> {{ node['owner']['contact'] }}
+{% endif %}
+
+<b>HW:</b> {{ node['hardware']['model'] }}
+
+<b>FW:</b> {{ node['software']['firmware']['release'] }} ({{ node['software']['autoupdater']['branch'] }}
+    {%- if not node['software']['autoupdater']['enabled'] %} disabled{% endif -%})
+
+{% if nexthop -%}
+    <b>NH:</b> {{ nexthop['host'] }}
+{%- else -%}
+    <b>GW:</b> {{ node['network']['mesh_vpn']['peers']|join(",") }}
+{% endif %}
+</pre>
+{% endblock %}

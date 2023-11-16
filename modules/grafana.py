@@ -51,3 +51,9 @@ class Grafana:
                 cookie[ c.name ]['path'] = c.path
         return r.content
 
+    @cherrypy.expose
+    def gf_ni(self,host):
+        user = self.get_user()
+        node = self.mdb["nodes"].find_one({"host":host})
+        nexthop = self.mdb["nodes"].find_one({ "ifaddr":node.get("network",{}).get("nexthop",None) })
+        return self.serve_site("gf_ni", user = user, node = node, nexthop = nexthop )
