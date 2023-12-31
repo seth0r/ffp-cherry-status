@@ -42,6 +42,8 @@ def getkindofaddr(addr):
 
 class NodeMap:
     def node2gjs(self,node):
+        if node.get("hideinmap",False):
+            return
         now = time.time()
         loc = getnodeloc(node)
         nexthop = self.mdb["nodes"].find_one({ "ifaddr":node.get("network",{}).get("nexthop",None) })
@@ -86,7 +88,9 @@ class NodeMap:
         gjs = { "type": "FeatureCollection","features": [] }
         
         for n in self.mdb["nodes"].find( {}, sort = [("last_ts",-1)] ):
-            gjs["features"].append( self.node2gjs( self.nodeaddsettings(n) ) )
+            f = self.node2gjs( self.nodeaddsettings(n) )
+            if f:
+                gjs["features"].append( f )
 
         cherrypy.response.headers['Content-Type'] = 'application/json'
         return bytes(json.dumps(gjs),"utf-8")
