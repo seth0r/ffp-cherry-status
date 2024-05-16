@@ -29,7 +29,7 @@ def valid_username( s ):
     for c in s:
         if c.isascii() and c.isalnum():
             continue
-        if c in "-_.":
+        if c in "+-_.":
             continue
         return False
     return True
