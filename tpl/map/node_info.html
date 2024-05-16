@@ -1,7 +1,11 @@
 {% import 'helpers.tpl' as h %}
 <div class="container nodeinfo {{ color }}" id="{{ node['_id'] }}">
     <div class="row">
-        <div class="col hostname">{{ node['host'] }}</div>
+        <div class="col-8 hostname">{{ node['host'] }}</div>
+        <div class="col-4 grafanalink">
+            <a href="/gf_nodeoverview?host={{ node['host'] }}" target="_blank">
+            <img src="/static/grafana.svg" title="Grafana" alt="Grafana" width="24px" height="24px"></a>
+        </div>
     </div>
     {% if node['offline'] is gt(0) %}
     <div class="row">

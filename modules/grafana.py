@@ -57,3 +57,11 @@ class Grafana:
         node = self.mdb["nodes"].find_one({"host":host},sort=[("last_ts",-1)])
         nexthop = self.mdb["nodes"].find_one({ "ifaddr":node.get("network",{}).get("nexthop",None) })
         return self.serve_site("gf_ni", user = user, node = node, nexthop = nexthop )
+
+    @cherrypy.expose
+    def gf_nodeoverview(self,host=None):
+        gurl = "/grafana/d/b4a8cc56-8883-469d-ab4d-a96aecec6591/node-overview"
+        if host:
+            raise HTTPRedirect( "%s?var-host=%s" % (gurl, host) )
+        else:
+            raise HTTPRedirect( gurl )
