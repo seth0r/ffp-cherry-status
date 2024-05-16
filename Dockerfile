@@ -6,6 +6,8 @@ RUN pip install --upgrade pip
 # get curl for healthchecks
 RUN apk add curl
 
+RUN apk add --virtual .tmp-build-deps gcc libc-dev libffi-dev
+
 # permissions and nonroot user for tightened security
 RUN adduser -D nonroot
 RUN mkdir /home/app/ && chown -R nonroot:nonroot /home/app
